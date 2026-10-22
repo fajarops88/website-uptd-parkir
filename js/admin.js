@@ -8,6 +8,25 @@
  * ============================================================
  */
 function redrawCharts() { if (S.route === 'admin' && S.adm.tab === 'ringkasan' && S.dash && $('#chJenis')) drawCharts(); }
+async function drawCharts() {
+  const d = S.dash; if (!d || !$('#chJenis')) return;
+  try { await ensureChartJs(); }
+  catch (e) { $$('.chart-box').forEach(function (b) { b.innerHTML = '<p class="text-body-sm text-on-surface-variant p-4">' + esc(e.message) + '</p>'; }); return; }
+  if (!$('#chJenis')) return;
+  destroyCharts();
+  const t = chartTheme();
+  Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif"; Chart.defaults.color = t.text;
+  const empty = function (id) { const cv = $('#' + id); if (cv) cv.parentNode.innerHTML = '<p class="text-body-sm text-on-surface-variant p-4">Belum ada data.</p>'; };
+  const scales = { x: { grid: { display: false }, ticks: { color: t.text } }, y: { beginAtZero: true, ticks: { precision: 0, color: t.text }, grid: { color: t.grid } } };
+  const jl = Object.keys(d.byJenis);
+  if (jl.length) S.charts.jenis = new Chart($('#chJenis'), { type: 'doughnut', data: { labels: jl.map(function (x) { return JENIS_LABEL[x] || x; }), datasets: [{ data: jl.map(function (x) { return d.byJenis[x]; }), backgroundColor: t.pal, borderColor: t.surface, borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { color: t.text, boxWidth: 12, padding: 14 } } } } });
+  else empty('chJenis');
+  const wl = Object.keys(d.byWilayah);
+  if (wl.length) S.charts.wil = new Chart($('#chWil'), { type: 'bar', data: { labels: wl, datasets: [{ label: 'Titik parkir', data: wl.map(function (x) { return d.byWilayah[x]; }), backgroundColor: t.pal[0], borderRadius: 4, maxBarThickness: 38 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: scales } });
+  else empty('chWil');
+  const bl = Object.keys(d.beritaPerBulan);
+  S.charts.berita = new Chart($('#chBerita'), { type: 'bar', data: { labels: bl.map(function (x) { return BULAN[+x.slice(5, 7) - 1] + ' ' + x.slice(2, 4); }), datasets: [{ label: 'Berita', data: bl.map(function (x) { return d.beritaPerBulan[x]; }), backgroundColor: t.pal[1], borderRadius: 4, maxBarThickness: 38 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: scales } });
+}
 
 const CFG_FIELDS = [
   ['namaSitus', 'Nama situs', 'text', 1], ['namaInduk', 'Instansi induk', 'text', 0],
