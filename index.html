@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>UPTD Pengelolaan Parkir</title>
+
+  <!-- Font: Plus Jakarta Sans + Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=block" rel="stylesheet">
+
+  <!-- Tailwind (CDN) — dikonfigurasi memakai token CSS dari css/style.css agar tema terang/gelap otomatis -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    (function () {
+      var c = function (n) { return 'rgb(var(--' + n + ') / <alpha-value>)'; };
+      var names = ['background', 'surface', 'surface-container-lowest', 'surface-container-low', 'surface-container',
+        'surface-container-high', 'surface-container-highest', 'on-surface', 'on-surface-variant', 'outline', 'outline-variant',
+        'primary', 'on-primary', 'primary-container', 'on-primary-container', 'primary-fixed', 'on-primary-fixed',
+        'secondary', 'on-secondary', 'secondary-container', 'on-secondary-container', 'secondary-fixed',
+        'tertiary', 'tertiary-container', 'on-tertiary-container', 'tertiary-fixed', 'tertiary-fixed-dim', 'on-tertiary-fixed',
+        'error', 'error-container', 'on-error-container', 'brand', 'brand-2', 'on-brand', 'on-brand-muted'];
+      var colors = {};
+      names.forEach(function (n) { colors[n] = c(n); });
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: colors,
+            fontFamily: { sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+            borderRadius: { DEFAULT: '0.25rem', md: '0.375rem', lg: '0.5rem', xl: '0.75rem' },
+            fontSize: {
+              'display-lg': ['56px', { lineHeight: '64px', letterSpacing: '-0.02em', fontWeight: '800' }],
+              'display-lg-m': ['36px', { lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: '800' }],
+              'display-md': ['44px', { lineHeight: '52px', letterSpacing: '-0.02em', fontWeight: '700' }],
+              'headline-lg': ['32px', { lineHeight: '40px', letterSpacing: '-0.01em', fontWeight: '700' }],
+              'headline-lg-m': ['24px', { lineHeight: '32px', letterSpacing: '-0.01em', fontWeight: '700' }],
+              'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+              'headline-sm': ['20px', { lineHeight: '28px', fontWeight: '600' }],
+              'title-lg': ['18px', { lineHeight: '26px', fontWeight: '600' }],
+              'title-md': ['16px', { lineHeight: '24px', fontWeight: '600' }],
+              'body-lg': ['18px', { lineHeight: '28px' }],
+              'body-md': ['15px', { lineHeight: '24px' }],
+              'body-sm': ['13px', { lineHeight: '20px' }],
+              'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.01em', fontWeight: '600' }],
+              'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.02em', fontWeight: '600' }],
+              'label-sm': ['11px', { lineHeight: '14px', letterSpacing: '0.04em', fontWeight: '700' }]
+            }
+          }
+        }
+      };
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-background text-on-surface font-sans antialiased">
+
+  <a href="javascript:void(0)" class="skip-link" onclick="focusMain()">Lewati ke konten utama</a>
+
+  <!-- Layar muat awal -->
+  <div id="boot" class="fixed inset-0 z-[90] flex flex-col items-center justify-center gap-4 bg-background" role="status" aria-live="polite">
+    <div class="spinner spinner-lg" aria-hidden="true"></div>
+    <p class="text-label-lg text-on-surface-variant">Memuat portal…</p>
+  </div>
+
+  <!-- Header publik -->
+  <header id="siteHeader" class="fixed top-0 inset-x-0 z-40 bg-surface/90 backdrop-blur-xl border-b border-outline-variant/40">
+    <div class="h-16 lg:h-20 max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between gap-3">
+      <button type="button" class="flex items-center gap-3 text-left min-h-[44px] rounded-md" onclick="navigateTo('beranda')" aria-label="Ke halaman beranda">
+        <span id="brandLogo" class="shrink-0"></span>
+        <span class="flex flex-col min-w-0">
+          <span id="brandName" class="text-title-md text-primary font-bold leading-tight truncate-1">UPTD Pengelolaan Parkir</span>
+          <span id="brandSub" class="text-label-sm text-on-surface-variant uppercase truncate-1">Dinas Perhubungan</span>
+        </span>
+      </button>
+
+      <nav id="mainNav" class="hidden xl:flex items-center gap-1" aria-label="Navigasi utama"></nav>
+
+      <div class="flex items-center gap-1 sm:gap-2">
+        <button type="button" class="icon-btn" id="themeBtn" onclick="toggleTheme()" aria-label="Ganti ke mode gelap" title="Ganti tema">
+          <span class="material-symbols-outlined" id="themeIcon" aria-hidden="true">dark_mode</span>
+        </button>
+        <button type="button" class="btn btn-outline btn-sm hidden sm:inline-flex" onclick="navigateTo('admin')">
+          <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">admin_panel_settings</span>Portal Admin
+        </button>
+        <button type="button" class="icon-btn xl:hidden" onclick="toggleDrawer(true)" aria-label="Buka menu" aria-expanded="false" id="menuBtn">
+          <span class="material-symbols-outlined" aria-hidden="true">menu</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten SPA: seluruh halaman disuntikkan ke sini, URL TIDAK PERNAH berubah -->
+  <main id="main" tabindex="-1" class="pt-16 lg:pt-20 min-h-screen outline-none">
+    <div id="app-container"></div>
+  </main>
+
+  <footer id="siteFooter" class="bg-surface-container-low border-t border-outline-variant/40 mt-10"></footer>
+
+  <!-- Wadah modal, laci menu, notifikasi -->
+  <div id="drawerRoot"></div>
+  <div id="modalRoot"></div>
+  <div id="toastRoot" class="fixed bottom-4 inset-x-4 sm:left-auto sm:right-4 z-[80] flex flex-col gap-2 items-end pointer-events-none" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/dispakot.js"></script>
+  <script src="js/cetak.js"></script>
+</body>
+</html>
