@@ -469,7 +469,7 @@ function renderBeranda(c) {
     '<div class="relative max-w-6xl mx-auto px-4 md:px-8 pt-12 pb-28 flex flex-col gap-6">' +
     '<span class="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full text-label-sm uppercase" style="background:rgb(255 255 255 / .12)"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim" aria-hidden="true"></span>' + esc(cfg.namaInduk || 'Dinas Perhubungan') + '</span>' +
     '<div class="flex flex-col gap-3"><h1 class="text-display-lg-m md:text-display-lg" style="color:rgb(var(--on-brand))">' + esc(cfg.tagline || cfg.namaSitus) + '</h1>' +
-    '<p class="text-body-md md:text-body-lg measure text-right ml-auto" style="color:rgb(var(--on-brand-muted))">' + esc(cfg.deskripsi || '') + '</p></div>' +
+    '<p class="text-body-md md:text-body-lg measure text-justify" style="color:rgb(var(--on-brand-muted))">' + esc(cfg.deskripsi || '') + '</p></div>' +
     '<form class="w-full card p-3 flex flex-col md:flex-row gap-2" onsubmit="return heroSearch(event)" role="search" aria-label="Cari titik parkir">' +
     '<label class="sr-only" for="hq">Kata kunci</label>' +
     '<div class="relative flex-1"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-outline">' + ic('search') + '</span><input id="hq" class="input pl-11" type="search" placeholder="Cari jalan, kawasan, atau nama titik parkir…" autocomplete="off"></div>' +
