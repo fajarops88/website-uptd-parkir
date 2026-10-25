@@ -455,6 +455,8 @@ function renderBeranda(c) {
   const berita = D('Berita').slice().sort(byTglDesc).slice(0, 3);
   const sejarah = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Sejarah'; }).sort(byUrut)[0];
   const visi = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Visi'; }).sort(byUrut)[0];
+  const sambutan = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Sambutan'; }).sort(byUrut)[0];
+  const kepala = D('PejabatStruktural').filter(function (p) { return p.Jenjang === 'Kepala UPTD'; }).sort(byUrut)[0];
   const sorot = lok.slice().sort(function (a, b) { return (b.Foto ? 1 : 0) - (a.Foto ? 1 : 0) || (a.Status === 'Resmi' ? -1 : 1); }).slice(0, 3);
   const quick = [
     { i: 'map', t: 'Direktori Titik Parkir', d: 'Lokasi, kapasitas, dan tarif parkir yang dikelola UPTD, lengkap dengan filter wilayah.', a: 'Jelajahi titik parkir', r: 'lokasi', p: {} },
@@ -464,7 +466,7 @@ function renderBeranda(c) {
   ];
   c.innerHTML =
     '<section class="hero"><div class="hero-photo" ' + (cfg.heroFoto ? 'style="background-image:url(\'' + esc(imgUrl(cfg.heroFoto, 1600)) + '\')"' : 'hidden') + '></div>' +
-    '<div class="relative max-w-7xl mx-auto px-4 md:px-8 pt-12 pb-28 flex flex-col gap-6">' +
+    '<div class="relative max-w-6xl mx-auto px-4 md:px-8 pt-12 pb-28 flex flex-col gap-6">' +
     '<span class="inline-flex items-center gap-2 self-start px-3 py-1 rounded-full text-label-sm uppercase" style="background:rgb(255 255 255 / .12)"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim" aria-hidden="true"></span>' + esc(cfg.namaInduk || 'Dinas Perhubungan') + '</span>' +
     '<div class="max-w-3xl flex flex-col gap-3"><h1 class="text-display-lg-m md:text-display-lg" style="color:rgb(var(--on-brand))">' + esc(cfg.tagline || cfg.namaSitus) + '</h1>' +
     '<p class="text-body-md md:text-body-lg" style="color:rgb(var(--on-brand-muted))">' + esc(cfg.deskripsi || '') + '</p></div>' +
@@ -475,10 +477,23 @@ function renderBeranda(c) {
     '<div class="select-wrap md:w-56"><select id="hw" class="input"><option value="">Semua wilayah</option>' + wilayah.map(function (w) { return '<option value="' + esc(w) + '">' + esc(w) + '</option>'; }).join('') + '</select>' + ic('expand_more') + '</div>' +
     '<button type="submit" class="btn btn-amber">' + ic('near_me') + 'Cari parkir</button></form></div></section>' +
 
-    '<div class="max-w-7xl mx-auto px-4 md:px-8 -mt-16 relative z-10"><div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">' +
+    '<div class="max-w-6xl mx-auto px-4 md:px-8 -mt-16 relative z-10"><div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">' +
     [['local_parking', 'Titik parkir terdata', lok.length], ['domain', 'Wilayah terlayani', wilayah.length], ['gavel', 'Regulasi', D('Regulasi').length], ['support_agent', 'Jenis pelayanan', D('Pelayanan').length]].map(function (k) {
       return '<div class="card p-4 flex items-center gap-3 shadow-lg"><div class="kpi-icon">' + ic(k[0], 'text-2xl') + '</div><div class="min-w-0"><div class="text-headline-md md:text-headline-lg text-primary font-extrabold num leading-none">' + esc(fmtNum(k[2])) + '</div><div class="text-label-md text-on-surface-variant mt-1">' + esc(k[1]) + '</div></div></div>';
     }).join('') + '</div></div>' +
+
+    (kepala || sambutan ?
+      '<section class="max-w-6xl mx-auto px-4 md:px-8 pt-14"><div class="card p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 md:items-center">' +
+      '<div class="md:col-span-4 flex flex-col items-center md:items-start gap-3 text-center md:text-left">' +
+      (kepala && kepala.Foto ?
+        '<button type="button" class="rounded-xl overflow-hidden shrink-0" style="width:160px;height:160px" data-id="' + esc(kepala.Foto) + '" data-t="' + esc(kepala.Nama) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar foto ' + esc(kepala.Nama) + '">' + imgTag(kepala.Foto, kepala.Nama, 'w-full h-full object-cover', 320) + '</button>' :
+        '<div class="rounded-xl shrink-0" style="width:160px;height:160px">' + placeholderImg('badge') + '</div>') +
+      '<div><p class="text-title-md text-primary font-bold">' + esc(kepala ? kepala.Nama : 'Kepala UPTD') + '</p>' +
+      '<p class="text-body-sm text-on-surface-variant">' + esc(kepala ? kepala.Jabatan : 'Kepala UPTD Pengelolaan Parkir') + '</p></div></div>' +
+      '<div class="md:col-span-8 flex flex-col gap-3">' +
+      '<span class="chip chip-brand self-start inline-flex items-center gap-1">' + ic('format_quote', 'text-base') + 'Sambutan Kepala UPTD</span>' +
+      '<p class="text-body-lg text-on-surface-variant measure pre-line">' + esc(sambutan ? sambutan.Isi : 'Sambutan dari Kepala UPTD akan tampil di sini. Admin dapat mengisinya melalui Portal Admin → Profil UPTD → Bagian: Sambutan.') + '</p>' +
+      '</div></div></section>' : '') +
 
     '<section class="max-w-7xl mx-auto px-4 md:px-8 py-14 flex flex-col gap-6">' + sectionTitle('Akses cepat', 'Informasi yang paling sering dicari masyarakat.') +
     '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">' + quick.map(function (q) {
