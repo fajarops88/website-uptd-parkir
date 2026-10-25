@@ -601,25 +601,25 @@ function renderProfilSambutan(c) {
   const kepala = D('PejabatStruktural').filter(function (p) { return p.Jenjang === 'Kepala UPTD'; }).sort(byUrut)[0];
   c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Sambutan Kepala UPTD', desc: 'Sambutan dari pimpinan UPTD Pengelolaan Parkir.' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-sambutan') +
-    '<div class="card p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 md:items-center">' +
+    '<div class="card p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 md:items-start">' +
     '<div class="md:col-span-4 flex flex-col items-center md:items-start gap-3 text-center md:text-left">' +
     (kepala && kepala.Foto ?
-      '<button type="button" class="rounded-xl overflow-hidden shrink-0" style="width:160px;height:160px" data-id="' + esc(kepala.Foto) + '" data-t="' + esc(kepala.Nama) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar foto ' + esc(kepala.Nama) + '">' + imgTag(kepala.Foto, kepala.Nama, 'w-full h-full object-cover', 320) + '</button>' :
-      '<div class="rounded-xl shrink-0" style="width:160px;height:160px">' + placeholderImg('badge') + '</div>') +
+      '<button type="button" class="rounded-2xl overflow-hidden shrink-0 w-full max-w-[220px] aspect-[3/4]" data-id="' + esc(kepala.Foto) + '" data-t="' + esc(kepala.Nama) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar foto ' + esc(kepala.Nama) + '">' + imgTag(kepala.Foto, kepala.Nama, 'w-full h-full object-cover', 440) + '</button>' :
+      '<div class="rounded-2xl shrink-0 w-full max-w-[220px] aspect-[3/4]">' + placeholderImg('badge') + '</div>') +
     '<div><p class="text-title-md text-primary font-bold">' + esc(kepala ? kepala.Nama : 'Kepala UPTD') + '</p>' +
     '<p class="text-body-sm text-on-surface-variant">' + esc(kepala ? kepala.Jabatan : 'Kepala UPTD Pengelolaan Parkir') + '</p></div></div>' +
     '<div class="md:col-span-8 flex flex-col gap-3">' +
     '<span class="chip chip-brand self-start inline-flex items-center gap-1">' + ic('format_quote', 'text-base') + 'Sambutan Kepala UPTD</span>' +
-    '<p class="text-body-lg text-on-surface-variant measure pre-line">' + esc(sambutan ? sambutan.Isi : 'Sambutan dari Kepala UPTD akan tampil di sini. Admin dapat mengisinya melalui Portal Admin → Profil UPTD → Bagian: Sambutan.') + '</p>' +
+    '<p class="text-body-lg text-on-surface-variant text-justify pre-line">' + esc(sambutan ? sambutan.Isi : 'Sambutan dari Kepala UPTD akan tampil di sini. Admin dapat mengisinya melalui Portal Admin → Profil UPTD → Bagian: Sambutan.') + '</p>' +
     '</div></div></div>';
 }
 function renderProfilUmum(c) {
   const p = D('ProfilUPTD').filter(function (x) { return x.Bagian === 'Profil'; }).sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Profil', desc: S.cfg.deskripsi || '' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Profil' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-umum') +
     (p.length ? p.map(function (x) {
       return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
-        '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line measure">' + esc(x.Isi) + '</p></div>' +
+        '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line text-justify">' + esc(x.Isi) + '</p></div>' +
         (x.Foto ? '<div class="lg:col-span-5 rounded-lg overflow-hidden bg-surface-container">' + imgTag(x.Foto, x.Judul, 'w-full h-full object-cover', 900) + '</div>' : '') + '</article>';
     }).join('') : emptyState('domain', 'Profil belum diisi', 'Konten akan tampil setelah admin mengisinya melalui Portal Admin → Profil UPTD → Bagian: Profil.')) + '</div>';
 }
@@ -629,7 +629,7 @@ function renderProfilSejarah(c) {
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-sejarah') +
     (s.length ? s.map(function (x) {
       return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
-        '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line measure">' + esc(x.Isi) + '</p></div>' +
+        '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line text-justify">' + esc(x.Isi) + '</p></div>' +
         (x.Foto ? '<div class="lg:col-span-5 rounded-lg overflow-hidden bg-surface-container">' + imgTag(x.Foto, x.Judul, 'w-full h-full object-cover', 900) + '</div>' : '') + '</article>';
     }).join('') : emptyState('history_edu', 'Sejarah belum diisi', 'Konten akan tampil setelah admin mengisinya.')) + '</div>';
 }
