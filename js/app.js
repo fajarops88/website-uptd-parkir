@@ -19,15 +19,25 @@ const S = {
     lokasi: { q: '', wil: '', jenis: '', status: '', view: 'kartu' },
     kontakTab: 'pesan',
     berita: { q: '', kat: '', n: 9 },
-    profilTab: 'sejarah', regTab: 'regulasi', regQ: ''
+    regTab: 'regulasi', regQ: ''
   },
   adm: { tab: 'ringkasan', rows: {}, q: {}, unread: 0, pesanFilter: 'semua', dpStats: null },
   charts: {}
 };
 
+const PROFIL_PAGES = [
+  { r: 'profil-sambutan', l: 'Sambutan Kepala UPTD', i: 'format_quote' },
+  { r: 'profil-umum', l: 'Profil', i: 'domain' },
+  { r: 'profil-sejarah', l: 'Sejarah', i: 'history_edu' },
+  { r: 'profil-visimisi', l: 'Visi & Misi', i: 'flag' },
+  { r: 'profil-tupoksi', l: 'Tugas dan Fungsi', i: 'rule' },
+  { r: 'profil-struktur', l: 'Struktur Organisasi', i: 'account_tree' },
+  { r: 'profil-pejabat', l: 'Pejabat Struktural', i: 'badge' },
+  { r: 'profil-pegawai', l: 'Pegawai UPTD', i: 'groups' }
+];
 const NAV = [
   { r: 'beranda', l: 'Beranda', i: 'home' },
-  { r: 'profil', l: 'Profil & Organisasi', i: 'domain' },
+  { l: 'Profil & Organisasi', i: 'domain', sub: PROFIL_PAGES },
   { r: 'lokasi', l: 'Parkir', i: 'local_parking' },
   { r: 'berita', l: 'Berita', i: 'newspaper' },
   { r: 'regulasi', l: 'Regulasi & Layanan', i: 'gavel' },
@@ -252,6 +262,7 @@ function logoHtml(h) {
     '<rect x="42" y="14" width="4" height="28" rx="2" fill="#D97706"/></svg>';
 }
 function activeNavKey() { return S.route === 'berita-detail' ? 'berita' : S.route; }
+function footerNavLinks() { return NAV.map(function (n) { return n.sub ? { r: n.sub[0].r, l: n.l } : n; }); }
 
 function renderChrome() {
   const cfg = S.cfg;
@@ -265,12 +276,38 @@ function renderChrome() {
 function renderNav() {
   const act = activeNavKey();
   $('#mainNav').innerHTML = NAV.map(function (n) {
+    if (n.sub) {
+      const onSub = n.sub.some(function (s) { return s.r === act; });
+      return '<div class="relative nav-dropdown">' +
+        '<button type="button" class="px-3 py-2 min-h-[44px] rounded-xl text-label-lg transition-colors inline-flex items-center gap-1 ' +
+        (onSub ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container') +
+        '" aria-haspopup="true" aria-expanded="false" onclick="toggleNavDropdown(event,this)">' + esc(n.l) + ic('expand_more', 'text-base') + '</button>' +
+        '<div class="nav-dropdown-panel hidden absolute left-0 top-full mt-1 min-w-[230px] card p-2 flex flex-col gap-1 z-30">' +
+        n.sub.map(function (s) {
+          const on = s.r === act;
+          return '<button type="button" data-r="' + s.r + '" onclick="navigateTo(this.dataset.r)" ' + (on ? 'aria-current="page"' : '') +
+            ' class="text-left px-3 py-2 rounded-lg text-label-lg flex items-center gap-2 ' +
+            (on ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container') + '">' + ic(s.i, 'text-base') + esc(s.l) + '</button>';
+        }).join('') + '</div></div>';
+    }
     const on = n.r === act;
     return '<button type="button" data-r="' + n.r + '" onclick="navigateTo(this.dataset.r)" ' + (on ? 'aria-current="page"' : '') +
       ' class="px-3 py-2 min-h-[44px] rounded-xl text-label-lg transition-colors ' +
       (on ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container') + '">' + esc(n.l) + '</button>';
   }).join('');
 }
+function toggleNavDropdown(e, btn) {
+  e.stopPropagation();
+  const panel = btn.nextElementSibling;
+  const willOpen = panel.classList.contains('hidden');
+  $$('#mainNav .nav-dropdown-panel').forEach(function (p) { p.classList.add('hidden'); });
+  $$('#mainNav .nav-dropdown > button').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+  if (willOpen) { panel.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); }
+}
+document.addEventListener('click', function () {
+  $$('#mainNav .nav-dropdown-panel').forEach(function (p) { p.classList.add('hidden'); });
+  $$('#mainNav .nav-dropdown > button').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+});
 
 function toggleDrawer(open) {
   const root = $('#drawerRoot'), btn = $('#menuBtn');
@@ -284,6 +321,15 @@ function toggleDrawer(open) {
     '<button type="button" class="icon-btn sm" onclick="toggleDrawer(false)" aria-label="Tutup menu">' + ic('close') + '</button></div>' +
     '<nav class="p-3 flex flex-col gap-1" aria-label="Navigasi utama">' +
     NAV.map(function (n) {
+      if (n.sub) {
+        return '<div class="flex flex-col gap-1 mt-2">' +
+          '<div class="flex items-center gap-2 px-3 py-1 text-label-md text-on-surface-variant uppercase tracking-wide">' + ic(n.i, 'text-base') + esc(n.l) + '</div>' +
+          n.sub.map(function (s) {
+            const on = s.r === act;
+            return '<button type="button" data-r="' + s.r + '" onclick="navigateTo(this.dataset.r)" ' + (on ? 'aria-current="page"' : '') +
+              ' class="side-link pl-11">' + esc(s.l) + '</button>';
+          }).join('') + '</div>';
+      }
       const on = n.r === act;
       return '<button type="button" data-r="' + n.r + '" onclick="navigateTo(this.dataset.r)" ' + (on ? 'aria-current="page"' : '') +
         ' class="side-link">' + ic(n.i) + esc(n.l) + '</button>';
@@ -313,7 +359,7 @@ function renderFooter() {
     '<div class="flex flex-col gap-3"><h2 class="text-title-md text-primary font-bold">Kontak</h2>' +
     '<ul class="flex flex-col gap-2 text-body-sm text-on-surface-variant">' + (kontak.length ? kontak.map(function (k) { return '<li class="flex gap-2 items-start">' + k + '</li>'; }).join('') : '<li>Belum diatur.</li>') + '</ul></div>' +
     '<div class="flex flex-col gap-3"><h2 class="text-title-md text-primary font-bold">Tautan</h2><nav class="flex flex-col items-start gap-1 text-body-sm" aria-label="Tautan footer">' +
-    NAV.map(function (n) { return '<button type="button" class="text-on-surface-variant hover:text-primary min-h-[32px] text-left" data-r="' + n.r + '" onclick="navigateTo(this.dataset.r)">' + esc(n.l) + '</button>'; }).join('') +
+    footerNavLinks().map(function (n) { return '<button type="button" class="text-on-surface-variant hover:text-primary min-h-[32px] text-left" data-r="' + n.r + '" onclick="navigateTo(this.dataset.r)">' + esc(n.l) + '</button>'; }).join('') +
     '</nav></div></div>' +
     '<div class="flex flex-col md:flex-row items-center justify-between gap-2 px-4 py-3 rounded-xl bg-surface-container text-body-sm text-on-surface-variant">' +
     '<span>© ' + new Date().getFullYear() + ' ' + esc(cfg.namaSitus || '') + ' — ' + esc(cfg.namaInduk || '') + '. Hak cipta dilindungi.</span>' +
@@ -325,7 +371,14 @@ function renderFooter() {
 // ════════════════════════════════════════════════════════
 const ROUTES = {
   beranda: function (c) { renderBeranda(c); },
-  profil: function (c, p) { renderProfil(c, p); },
+  'profil-sambutan': function (c) { renderProfilSambutan(c); },
+  'profil-umum': function (c) { renderProfilUmum(c); },
+  'profil-sejarah': function (c) { renderProfilSejarah(c); },
+  'profil-visimisi': function (c) { renderProfilVisiMisi(c); },
+  'profil-tupoksi': function (c) { renderProfilTupoksi(c); },
+  'profil-struktur': function (c) { renderProfilStruktur(c); },
+  'profil-pejabat': function (c) { renderProfilPejabat(c); },
+  'profil-pegawai': function (c) { renderProfilPegawai(c); },
   lokasi: function (c, p) { renderLokasi(c, p); },
   berita: function (c) { renderBerita(c); },
   'berita-detail': function (c, p) { renderBeritaDetail(c, p); },
@@ -455,8 +508,6 @@ function renderBeranda(c) {
   const berita = D('Berita').slice().sort(byTglDesc).slice(0, 3);
   const sejarah = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Sejarah'; }).sort(byUrut)[0];
   const visi = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Visi'; }).sort(byUrut)[0];
-  const sambutan = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Sambutan'; }).sort(byUrut)[0];
-  const kepala = D('PejabatStruktural').filter(function (p) { return p.Jenjang === 'Kepala UPTD'; }).sort(byUrut)[0];
   const sorot = lok.slice().sort(function (a, b) { return (b.Foto ? 1 : 0) - (a.Foto ? 1 : 0) || (a.Status === 'Resmi' ? -1 : 1); }).slice(0, 3);
   const quick = [
     { i: 'map', t: 'Direktori Titik Parkir', d: 'Lokasi, kapasitas, dan tarif parkir yang dikelola UPTD, lengkap dengan filter wilayah.', a: 'Jelajahi titik parkir', r: 'lokasi', p: {} },
@@ -482,19 +533,6 @@ function renderBeranda(c) {
       return '<div class="card p-4 flex items-center gap-3 shadow-lg"><div class="kpi-icon">' + ic(k[0], 'text-2xl') + '</div><div class="min-w-0"><div class="text-headline-md md:text-headline-lg text-primary font-extrabold num leading-none">' + esc(fmtNum(k[2])) + '</div><div class="text-label-md text-on-surface-variant mt-1">' + esc(k[1]) + '</div></div></div>';
     }).join('') + '</div></div>' +
 
-    (kepala || sambutan ?
-      '<section class="max-w-6xl mx-auto px-4 md:px-8 pt-14"><div class="card p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 md:items-center">' +
-      '<div class="md:col-span-4 flex flex-col items-center md:items-start gap-3 text-center md:text-left">' +
-      (kepala && kepala.Foto ?
-        '<button type="button" class="rounded-xl overflow-hidden shrink-0" style="width:160px;height:160px" data-id="' + esc(kepala.Foto) + '" data-t="' + esc(kepala.Nama) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar foto ' + esc(kepala.Nama) + '">' + imgTag(kepala.Foto, kepala.Nama, 'w-full h-full object-cover', 320) + '</button>' :
-        '<div class="rounded-xl shrink-0" style="width:160px;height:160px">' + placeholderImg('badge') + '</div>') +
-      '<div><p class="text-title-md text-primary font-bold">' + esc(kepala ? kepala.Nama : 'Kepala UPTD') + '</p>' +
-      '<p class="text-body-sm text-on-surface-variant">' + esc(kepala ? kepala.Jabatan : 'Kepala UPTD Pengelolaan Parkir') + '</p></div></div>' +
-      '<div class="md:col-span-8 flex flex-col gap-3">' +
-      '<span class="chip chip-brand self-start inline-flex items-center gap-1">' + ic('format_quote', 'text-base') + 'Sambutan Kepala UPTD</span>' +
-      '<p class="text-body-lg text-on-surface-variant measure pre-line">' + esc(sambutan ? sambutan.Isi : 'Sambutan dari Kepala UPTD akan tampil di sini. Admin dapat mengisinya melalui Portal Admin → Profil UPTD → Bagian: Sambutan.') + '</p>' +
-      '</div></div></section>' : '') +
-
     '<section class="max-w-7xl mx-auto px-4 md:px-8 py-14 flex flex-col gap-6">' + sectionTitle('Akses cepat', 'Informasi yang paling sering dicari masyarakat.') +
     '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">' + quick.map(function (q) {
       return '<button type="button" class="card card-hover p-5 flex flex-col gap-3 text-left" data-r="' + q.r + '" data-p="' + esc(JSON.stringify(q.p)) + '" onclick="navigateTo(this.dataset.r, JSON.parse(this.dataset.p))">' +
@@ -507,7 +545,7 @@ function renderBeranda(c) {
       '<section class="bg-surface-container-low border-y border-outline-variant/40"><div class="max-w-7xl mx-auto px-4 md:px-8 py-14 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">' +
       '<div class="lg:col-span-7 flex flex-col gap-4">' + sectionTitle('Mengenal ' + (cfg.namaSitus || 'UPTD')) +
       (sejarah ? '<p class="text-body-lg text-on-surface-variant measure">' + esc(excerpt(sejarah.Isi, 420)) + '</p>' : '') +
-      '<div><button type="button" class="btn btn-outline" onclick="navigateTo(\'profil\')">Profil selengkapnya' + ic('arrow_forward') + '</button></div></div>' +
+      '<div><button type="button" class="btn btn-outline" onclick="navigateTo(\'profil-sejarah\')">Profil selengkapnya' + ic('arrow_forward') + '</button></div></div>' +
       (visi ? '<div class="lg:col-span-5 card p-6 flex flex-col gap-2"><span class="chip chip-brand self-start">Visi</span><p class="text-title-lg text-primary font-semibold">' + esc(visi.Isi) + '</p></div>' : '') +
       '</div></section>' : '') +
 
@@ -544,29 +582,108 @@ function heroSearch(e) {
 // ════════════════════════════════════════════════════════
 // BAGIAN 9: HALAMAN PUBLIK — PROFIL & ORGANISASI
 // ════════════════════════════════════════════════════════
-const PROFIL_TABS = [
-  { k: 'sejarah', l: 'Profil & Sejarah', i: 'history_edu' },
-  { k: 'visimisi', l: 'Visi & Misi', i: 'flag' },
-  { k: 'tupoksi', l: 'Tugas & Fungsi', i: 'rule' },
-  { k: 'struktur', l: 'Struktur Organisasi', i: 'account_tree' },
-  { k: 'personel', l: 'Pejabat & Pegawai', i: 'badge' }
-];
-function renderProfil(c, p) {
-  if (p && p.tab) S.ui.profilTab = p.tab;
-  const peg = D('PejabatStruktural').length + D('PegawaiUPTD').length;
-  c.innerHTML = pageHeader({
-    eyebrow: S.cfg.namaInduk || 'Dinas Perhubungan', title: 'Profil Kelembagaan & Tata Kelola',
-    desc: S.cfg.deskripsi || '',
-    right: '<div class="grid grid-cols-2 gap-3 w-full lg:w-auto">' + statBox('Pejabat & pegawai', fmtNum(peg)) + statBox('Titik parkir', fmtNum(D('LokasiParkir').length)) + '</div>'
-  }) +
-    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' +
-    '<div id="profilTabs">' + tabsHtml(PROFIL_TABS, S.ui.profilTab, 'setProfilTab', 'Bagian profil') + '</div>' +
-    '<div id="tabpanel" role="tabpanel" tabindex="0" class="flex flex-col gap-6">' + profilPanel() + '</div></div>';
+function profilSubNav(cur) {
+  return '<div class="flex flex-wrap gap-2">' + PROFIL_PAGES.map(function (t) {
+    const on = t.r === cur;
+    return '<button type="button" data-r="' + t.r + '" onclick="navigateTo(this.dataset.r)" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-label-lg transition-colors ' +
+      (on ? 'bg-primary-container text-on-primary-container' : 'bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high') + '">' + ic(t.i, 'text-base') + esc(t.l) + '</button>';
+  }).join('') + '</div>';
 }
-function setProfilTab(k) {
-  S.ui.profilTab = k;
-  $$('#profilTabs .tab').forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.k === k)); });
-  $('#tabpanel').innerHTML = profilPanel();
+function pejabatCard(o) {
+  return '<article class="card overflow-hidden flex flex-col"><div class="aspect-[3/4] bg-surface-container">' + (o.Foto ? imgTag(o.Foto, 'Foto ' + o.Nama, 'w-full h-full object-cover', 640) : placeholderImg('person')) + '</div>' +
+    '<div class="p-4 flex flex-col gap-1"><h3 class="text-title-md text-primary font-bold">' + esc(o.Nama) + '</h3>' +
+    (o.NIP ? '<span class="text-label-md text-on-surface-variant" style="font-family:ui-monospace,monospace">NIP. ' + esc(o.NIP) + '</span>' : '') +
+    '<span class="text-body-sm text-secondary font-semibold">' + esc(o.Jabatan) + '</span>' +
+    (o.Riwayat ? '<p class="text-body-sm text-on-surface-variant clamp-3 mt-1">' + esc(o.Riwayat) + '</p>' : '') + '</div></article>';
+}
+function renderProfilSambutan(c) {
+  const sambutan = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Sambutan'; }).sort(byUrut)[0];
+  const kepala = D('PejabatStruktural').filter(function (p) { return p.Jenjang === 'Kepala UPTD'; }).sort(byUrut)[0];
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Sambutan Kepala UPTD', desc: 'Sambutan dari pimpinan UPTD Pengelolaan Parkir.' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-sambutan') +
+    '<div class="card p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 md:items-center">' +
+    '<div class="md:col-span-4 flex flex-col items-center md:items-start gap-3 text-center md:text-left">' +
+    (kepala && kepala.Foto ?
+      '<button type="button" class="rounded-xl overflow-hidden shrink-0" style="width:160px;height:160px" data-id="' + esc(kepala.Foto) + '" data-t="' + esc(kepala.Nama) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar foto ' + esc(kepala.Nama) + '">' + imgTag(kepala.Foto, kepala.Nama, 'w-full h-full object-cover', 320) + '</button>' :
+      '<div class="rounded-xl shrink-0" style="width:160px;height:160px">' + placeholderImg('badge') + '</div>') +
+    '<div><p class="text-title-md text-primary font-bold">' + esc(kepala ? kepala.Nama : 'Kepala UPTD') + '</p>' +
+    '<p class="text-body-sm text-on-surface-variant">' + esc(kepala ? kepala.Jabatan : 'Kepala UPTD Pengelolaan Parkir') + '</p></div></div>' +
+    '<div class="md:col-span-8 flex flex-col gap-3">' +
+    '<span class="chip chip-brand self-start inline-flex items-center gap-1">' + ic('format_quote', 'text-base') + 'Sambutan Kepala UPTD</span>' +
+    '<p class="text-body-lg text-on-surface-variant measure pre-line">' + esc(sambutan ? sambutan.Isi : 'Sambutan dari Kepala UPTD akan tampil di sini. Admin dapat mengisinya melalui Portal Admin → Profil UPTD → Bagian: Sambutan.') + '</p>' +
+    '</div></div></div>';
+}
+function renderProfilUmum(c) {
+  const p = D('ProfilUPTD').filter(function (x) { return x.Bagian === 'Profil'; }).sort(byUrut);
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Profil', desc: S.cfg.deskripsi || '' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-umum') +
+    (p.length ? p.map(function (x) {
+      return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
+        '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line measure">' + esc(x.Isi) + '</p></div>' +
+        (x.Foto ? '<div class="lg:col-span-5 rounded-lg overflow-hidden bg-surface-container">' + imgTag(x.Foto, x.Judul, 'w-full h-full object-cover', 900) + '</div>' : '') + '</article>';
+    }).join('') : emptyState('domain', 'Profil belum diisi', 'Konten akan tampil setelah admin mengisinya melalui Portal Admin → Profil UPTD → Bagian: Profil.')) + '</div>';
+}
+function renderProfilSejarah(c) {
+  const s = D('ProfilUPTD').filter(function (x) { return x.Bagian === 'Sejarah'; }).sort(byUrut);
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Sejarah' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-sejarah') +
+    (s.length ? s.map(function (x) {
+      return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
+        '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line measure">' + esc(x.Isi) + '</p></div>' +
+        (x.Foto ? '<div class="lg:col-span-5 rounded-lg overflow-hidden bg-surface-container">' + imgTag(x.Foto, x.Judul, 'w-full h-full object-cover', 900) + '</div>' : '') + '</article>';
+    }).join('') : emptyState('history_edu', 'Sejarah belum diisi', 'Konten akan tampil setelah admin mengisinya.')) + '</div>';
+}
+function renderProfilVisiMisi(c) {
+  const P = D('ProfilUPTD');
+  const visi = P.filter(function (x) { return x.Bagian === 'Visi'; }).sort(byUrut);
+  const misi = P.filter(function (x) { return x.Bagian === 'Misi'; }).sort(byUrut);
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Visi & Misi' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-visimisi') +
+    sectionTitle('Visi') +
+    (visi.length ? visi.map(function (v) { return '<div class="card p-6 md:p-8"><p class="text-headline-sm text-primary font-semibold measure pre-line">' + esc(v.Isi) + '</p></div>'; }).join('') : emptyState('flag', 'Visi belum diisi', '')) +
+    sectionTitle('Misi') +
+    (misi.length ? '<ol class="grid grid-cols-1 md:grid-cols-2 gap-4">' + misi.map(function (m, i) {
+      return '<li class="card p-5 flex gap-4"><span class="shrink-0 w-10 h-10 rounded-lg grid place-items-center bg-primary-container text-on-primary-container font-bold num">' + (i + 1) + '</span><div><h3 class="text-title-md text-primary font-bold">' + esc(m.Judul) + '</h3><p class="text-body-md text-on-surface-variant mt-1 pre-line">' + esc(m.Isi) + '</p></div></li>';
+    }).join('') + '</ol>' : emptyState('flag', 'Misi belum diisi', '')) + '</div>';
+}
+function renderProfilTupoksi(c) {
+  const T = D('TugasFungsi');
+  const tugas = T.filter(function (x) { return x.Jenis === 'Tugas'; }).sort(byUrut);
+  const fungsi = T.filter(function (x) { return x.Jenis === 'Fungsi'; }).sort(byUrut);
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Tugas dan Fungsi' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-tupoksi') +
+    sectionTitle('Tugas') +
+    (tugas.length ? tugas.map(function (t) { return '<div class="card p-6"><h3 class="text-title-lg text-primary font-bold">' + esc(t.Judul) + '</h3><p class="text-body-md text-on-surface-variant mt-2 pre-line measure">' + esc(t.Deskripsi) + '</p></div>'; }).join('') : emptyState('rule', 'Tugas belum diisi', '')) +
+    sectionTitle('Fungsi') +
+    (fungsi.length ? '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + fungsi.map(function (f) {
+      return '<div class="card p-5 flex gap-3">' + ic('check_circle', 'text-tertiary-fixed-dim fill-1 mt-0.5') + '<div><h3 class="text-title-md text-primary font-bold">' + esc(f.Judul) + '</h3><p class="text-body-sm text-on-surface-variant mt-1 pre-line">' + esc(f.Deskripsi) + '</p></div></div>';
+    }).join('') + '</div>' : emptyState('rule', 'Fungsi belum diisi', '')) + '</div>';
+}
+function renderProfilStruktur(c) {
+  const auto = renderOrgChart();
+  const st = D('StrukturOrganisasi').filter(function (s) { return s.Gambar; });
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Struktur Organisasi' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-struktur') +
+    sectionTitle('Bagan Struktur Organisasi') +
+    (auto ? '<div class="card p-5 md:p-8 overflow-x-auto"><div class="min-w-[560px]">' + auto + '</div></div>' :
+      emptyState('account_tree', 'Struktur organisasi belum tersedia', 'Data dapat diisi oleh admin di Portal Admin.')) +
+    (st.length ? sectionTitle('Bagan resmi (unggahan admin)') + st.map(function (s) {
+      return '<div class="card p-4 md:p-6 flex flex-col gap-4"><div><h3 class="text-title-lg text-primary font-bold">' + esc(s.Judul) + '</h3>' + (s.Keterangan ? '<p class="text-body-sm text-on-surface-variant mt-1 pre-line">' + esc(s.Keterangan) + '</p>' : '') + '</div>' +
+        '<button type="button" class="block rounded-lg bg-surface-container p-2 text-left" data-id="' + esc(s.Gambar) + '" data-t="' + esc(s.Judul) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar bagan">' + imgTag(s.Gambar, s.Judul, 'w-full max-h-[560px] object-contain', 1400) + '</button>' +
+        '<p class="help">Ketuk gambar untuk memperbesar.</p></div>';
+    }).join('') : '') + '</div>';
+}
+function renderProfilPejabat(c) {
+  const pj = D('PejabatStruktural').slice().sort(byUrut);
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Pejabat Struktural', right: '<div class="grid grid-cols-1 gap-3 w-full lg:w-auto">' + statBox('Jumlah pejabat', fmtNum(pj.length)) + '</div>' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-pejabat') +
+    (pj.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">' + pj.map(pejabatCard).join('') + '</div>' : emptyState('badge', 'Data pejabat belum tersedia', '')) + '</div>';
+}
+function renderProfilPegawai(c) {
+  const pg = D('PegawaiUPTD').slice().sort(byUrut);
+  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Pegawai UPTD', right: '<div class="grid grid-cols-1 gap-3 w-full lg:w-auto">' + statBox('Jumlah pegawai', fmtNum(pg.length)) + '</div>' }) +
+    '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-pegawai') +
+    (pg.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">' + pg.map(pejabatCard).join('') + '</div>' : emptyState('groups', 'Data pegawai belum tersedia', '')) + '</div>';
 }
 function orgBox(p) {
   return '<div class="org-box">' +
@@ -615,67 +732,6 @@ function renderOrgChart() {
   }
   html += '</div>';
   return html;
-}
-function profilPanel() {
-  const P = D('ProfilUPTD');
-  switch (S.ui.profilTab) {
-    case 'visimisi': {
-      const visi = P.filter(function (x) { return x.Bagian === 'Visi'; }).sort(byUrut);
-      const misi = P.filter(function (x) { return x.Bagian === 'Misi'; }).sort(byUrut);
-      return sectionTitle('Visi') +
-        (visi.length ? visi.map(function (v) { return '<div class="card p-6 md:p-8"><p class="text-headline-sm text-primary font-semibold measure pre-line">' + esc(v.Isi) + '</p></div>'; }).join('') : emptyState('flag', 'Visi belum diisi', '')) +
-        sectionTitle('Misi') +
-        (misi.length ? '<ol class="grid grid-cols-1 md:grid-cols-2 gap-4">' + misi.map(function (m, i) {
-          return '<li class="card p-5 flex gap-4"><span class="shrink-0 w-10 h-10 rounded-lg grid place-items-center bg-primary-container text-on-primary-container font-bold num">' + (i + 1) + '</span><div><h3 class="text-title-md text-primary font-bold">' + esc(m.Judul) + '</h3><p class="text-body-md text-on-surface-variant mt-1 pre-line">' + esc(m.Isi) + '</p></div></li>';
-        }).join('') + '</ol>' : emptyState('flag', 'Misi belum diisi', ''));
-    }
-    case 'tupoksi': {
-      const T = D('TugasFungsi');
-      const tugas = T.filter(function (x) { return x.Jenis === 'Tugas'; }).sort(byUrut);
-      const fungsi = T.filter(function (x) { return x.Jenis === 'Fungsi'; }).sort(byUrut);
-      return sectionTitle('Tugas') +
-        (tugas.length ? tugas.map(function (t) { return '<div class="card p-6"><h3 class="text-title-lg text-primary font-bold">' + esc(t.Judul) + '</h3><p class="text-body-md text-on-surface-variant mt-2 pre-line measure">' + esc(t.Deskripsi) + '</p></div>'; }).join('') : emptyState('rule', 'Tugas belum diisi', '')) +
-        sectionTitle('Fungsi') +
-        (fungsi.length ? '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' + fungsi.map(function (f) {
-          return '<div class="card p-5 flex gap-3">' + ic('check_circle', 'text-tertiary-fixed-dim fill-1 mt-0.5') + '<div><h3 class="text-title-md text-primary font-bold">' + esc(f.Judul) + '</h3><p class="text-body-sm text-on-surface-variant mt-1 pre-line">' + esc(f.Deskripsi) + '</p></div></div>';
-        }).join('') + '</div>' : emptyState('rule', 'Fungsi belum diisi', ''));
-    }
-    case 'struktur': {
-      const auto = renderOrgChart();
-      const st = D('StrukturOrganisasi').filter(function (s) { return s.Gambar; });
-      return sectionTitle('Bagan Struktur Organisasi') +
-        (auto ? '<div class="card p-5 md:p-8 overflow-x-auto"><div class="min-w-[560px]">' + auto + '</div></div>' :
-          emptyState('account_tree', 'Struktur organisasi belum tersedia', 'Data dapat diisi oleh admin di Portal Admin.')) +
-        (st.length ? sectionTitle('Bagan resmi (unggahan admin)') + st.map(function (s) {
-          return '<div class="card p-4 md:p-6 flex flex-col gap-4"><div><h3 class="text-title-lg text-primary font-bold">' + esc(s.Judul) + '</h3>' + (s.Keterangan ? '<p class="text-body-sm text-on-surface-variant mt-1 pre-line">' + esc(s.Keterangan) + '</p>' : '') + '</div>' +
-            '<button type="button" class="block rounded-lg bg-surface-container p-2 text-left" data-id="' + esc(s.Gambar) + '" data-t="' + esc(s.Judul) + '" onclick="previewImage(this.dataset.id,this.dataset.t)" aria-label="Perbesar bagan">' + imgTag(s.Gambar, s.Judul, 'w-full max-h-[560px] object-contain', 1400) + '</button>' +
-            '<p class="help">Ketuk gambar untuk memperbesar.</p></div>';
-        }).join('') : '');
-    }
-    case 'personel': {
-      const pj = D('PejabatStruktural').slice().sort(byUrut), pg = D('PegawaiUPTD').slice().sort(byUrut);
-      return sectionTitle('Pejabat struktural') + (pj.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">' + pj.map(function (o) {
-        return '<article class="card overflow-hidden flex flex-col"><div class="aspect-[3/4] bg-surface-container">' + (o.Foto ? imgTag(o.Foto, 'Foto ' + o.Nama, 'w-full h-full object-cover', 640) : placeholderImg('person')) + '</div>' +
-          '<div class="p-4 flex flex-col gap-1"><h3 class="text-title-md text-primary font-bold">' + esc(o.Nama) + '</h3>' +
-          (o.NIP ? '<span class="text-label-md text-on-surface-variant" style="font-family:ui-monospace,monospace">NIP. ' + esc(o.NIP) + '</span>' : '') +
-          '<span class="text-body-sm text-secondary font-semibold">' + esc(o.Jabatan) + '</span>' +
-          (o.Riwayat ? '<p class="text-body-sm text-on-surface-variant clamp-3 mt-1">' + esc(o.Riwayat) + '</p>' : '') + '</div></article>';
-      }).join('') + '</div>' : emptyState('badge', 'Data pejabat belum tersedia', '')) +
-        sectionTitle('Pegawai UPTD') + (pg.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">' + pg.map(function (o) {
-          return '<article class="card p-4 flex items-center gap-3"><div class="w-14 h-14 rounded-full overflow-hidden shrink-0 bg-primary-fixed text-on-primary-fixed grid place-items-center font-bold">' +
-            (o.Foto ? imgTag(o.Foto, 'Foto ' + o.Nama, 'w-full h-full object-cover', 200) : esc(initials(o.Nama))) + '</div>' +
-            '<div class="min-w-0"><h3 class="text-title-md text-primary font-bold clamp-2">' + esc(o.Nama) + '</h3><p class="text-body-sm text-on-surface-variant">' + esc(o.Jabatan) + '</p></div></article>';
-        }).join('') + '</div>' : emptyState('groups', 'Data pegawai belum tersedia', ''));
-    }
-    default: {
-      const s = P.filter(function (x) { return x.Bagian === 'Sejarah'; }).sort(byUrut);
-      return sectionTitle('Profil & sejarah') + (s.length ? s.map(function (x) {
-        return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
-          '<h3 class="text-headline-sm text-primary font-semibold">' + esc(x.Judul) + '</h3><p class="text-body-md text-on-surface-variant pre-line measure">' + esc(x.Isi) + '</p></div>' +
-          (x.Foto ? '<div class="lg:col-span-5 rounded-lg overflow-hidden bg-surface-container">' + imgTag(x.Foto, x.Judul, 'w-full h-full object-cover', 900) + '</div>' : '') + '</article>';
-      }).join('') : emptyState('history_edu', 'Profil belum diisi', 'Konten akan tampil setelah admin mengisinya.'));
-    }
-  }
 }
 
 // ════════════════════════════════════════════════════════
