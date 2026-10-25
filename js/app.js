@@ -3,7 +3,7 @@
  * ============================================================
  * WEBSITE PUBLIK UPTD PENGELOLAAN PARKIR — versi statis GitHub Pages
  * Porting dari Website SPA Apps Script (JavaScript.html), HANYA 6 halaman publik:
- * Beranda, Profil & Organisasi, Parkir, Berita, Regulasi & Layanan, Kontak.
+ * Beranda, Profil, Parkir, Berita, Regulasi & Layanan, Kontak.
  * Portal Admin TETAP di Apps Script — tautan "Portal Admin" membuka URL /exec asli.
  * ============================================================
  */
@@ -37,7 +37,7 @@ const PROFIL_PAGES = [
 ];
 const NAV = [
   { r: 'beranda', l: 'Beranda', i: 'home' },
-  { l: 'Profil & Organisasi', i: 'domain', sub: PROFIL_PAGES },
+  { l: 'Profil', i: 'domain', sub: PROFIL_PAGES },
   { r: 'lokasi', l: 'Parkir', i: 'local_parking' },
   { r: 'berita', l: 'Berita', i: 'newspaper' },
   { r: 'regulasi', l: 'Regulasi & Layanan', i: 'gavel' },
@@ -599,7 +599,7 @@ function pejabatCard(o) {
 function renderProfilSambutan(c) {
   const sambutan = D('ProfilUPTD').filter(function (p) { return p.Bagian === 'Sambutan'; }).sort(byUrut)[0];
   const kepala = D('PejabatStruktural').filter(function (p) { return p.Jenjang === 'Kepala UPTD'; }).sort(byUrut)[0];
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Sambutan Kepala UPTD', desc: 'Sambutan dari pimpinan UPTD Pengelolaan Parkir.' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Sambutan Kepala UPTD', desc: 'Sambutan dari pimpinan UPTD Pengelolaan Parkir.' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-sambutan') +
     '<div class="card p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 md:items-start">' +
     '<div class="md:col-span-4 flex flex-col items-center md:items-start gap-3 text-center md:text-left">' +
@@ -615,7 +615,7 @@ function renderProfilSambutan(c) {
 }
 function renderProfilUmum(c) {
   const p = D('ProfilUPTD').filter(function (x) { return x.Bagian === 'Profil'; }).sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Profil' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Profil' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-umum') +
     (p.length ? p.map(function (x) {
       return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
@@ -625,7 +625,7 @@ function renderProfilUmum(c) {
 }
 function renderProfilSejarah(c) {
   const s = D('ProfilUPTD').filter(function (x) { return x.Bagian === 'Sejarah'; }).sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Sejarah' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Sejarah' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-sejarah') +
     (s.length ? s.map(function (x) {
       return '<article class="card p-6 md:p-8 grid grid-cols-1 ' + (x.Foto ? 'lg:grid-cols-12' : '') + ' gap-6 items-start"><div class="' + (x.Foto ? 'lg:col-span-7' : '') + ' flex flex-col gap-3">' +
@@ -637,7 +637,7 @@ function renderProfilVisiMisi(c) {
   const P = D('ProfilUPTD');
   const visi = P.filter(function (x) { return x.Bagian === 'Visi'; }).sort(byUrut);
   const misi = P.filter(function (x) { return x.Bagian === 'Misi'; }).sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Visi & Misi' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Visi & Misi' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-visimisi') +
     sectionTitle('Visi') +
     (visi.length ? visi.map(function (v) { return '<div class="card p-6 md:p-8"><p class="text-headline-sm text-primary font-semibold measure pre-line">' + esc(v.Isi) + '</p></div>'; }).join('') : emptyState('flag', 'Visi belum diisi', '')) +
@@ -650,7 +650,7 @@ function renderProfilTupoksi(c) {
   const T = D('TugasFungsi');
   const tugas = T.filter(function (x) { return x.Jenis === 'Tugas'; }).sort(byUrut);
   const fungsi = T.filter(function (x) { return x.Jenis === 'Fungsi'; }).sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Tugas dan Fungsi' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Tugas dan Fungsi' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-tupoksi') +
     sectionTitle('Tugas') +
     (tugas.length ? tugas.map(function (t) { return '<div class="card p-6"><h3 class="text-title-lg text-primary font-bold">' + esc(t.Judul) + '</h3><p class="text-body-md text-on-surface-variant mt-2 pre-line measure">' + esc(t.Deskripsi) + '</p></div>'; }).join('') : emptyState('rule', 'Tugas belum diisi', '')) +
@@ -662,7 +662,7 @@ function renderProfilTupoksi(c) {
 function renderProfilStruktur(c) {
   const auto = renderOrgChart();
   const st = D('StrukturOrganisasi').filter(function (s) { return s.Gambar; });
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Struktur Organisasi' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Struktur Organisasi' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-struktur') +
     sectionTitle('Bagan Struktur Organisasi') +
     (auto ? '<div class="card p-5 md:p-8 overflow-x-auto"><div class="min-w-[560px]">' + auto + '</div></div>' :
@@ -675,13 +675,13 @@ function renderProfilStruktur(c) {
 }
 function renderProfilPejabat(c) {
   const pj = D('PejabatStruktural').slice().sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Pejabat Struktural', right: '<div class="grid grid-cols-1 gap-3 w-full lg:w-auto">' + statBox('Jumlah pejabat', fmtNum(pj.length)) + '</div>' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Pejabat Struktural', right: '<div class="grid grid-cols-1 gap-3 w-full lg:w-auto">' + statBox('Jumlah pejabat', fmtNum(pj.length)) + '</div>' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-pejabat') +
     (pj.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">' + pj.map(pejabatCard).join('') + '</div>' : emptyState('badge', 'Data pejabat belum tersedia', '')) + '</div>';
 }
 function renderProfilPegawai(c) {
   const pg = D('PegawaiUPTD').slice().sort(byUrut);
-  c.innerHTML = pageHeader({ eyebrow: 'Profil & Organisasi', title: 'Pegawai UPTD', right: '<div class="grid grid-cols-1 gap-3 w-full lg:w-auto">' + statBox('Jumlah pegawai', fmtNum(pg.length)) + '</div>' }) +
+  c.innerHTML = pageHeader({ eyebrow: 'Profil', title: 'Pegawai UPTD', right: '<div class="grid grid-cols-1 gap-3 w-full lg:w-auto">' + statBox('Jumlah pegawai', fmtNum(pg.length)) + '</div>' }) +
     '<div class="max-w-7xl mx-auto px-4 md:px-8 py-8 flex flex-col gap-6">' + profilSubNav('profil-pegawai') +
     (pg.length ? '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">' + pg.map(pejabatCard).join('') + '</div>' : emptyState('groups', 'Data pegawai belum tersedia', '')) + '</div>';
 }
